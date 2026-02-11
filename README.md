@@ -8,14 +8,16 @@
 
 # Running MD Simulations - Test Run 1 - n_ct173_pep7-dk7-model0_MD
 # 1. Set up environment on HPC
+cd /home1/AMUKHTAR24@kgi.edu/thesis/md_sims_native/n_ct173_pep7-dk7-model0_MD
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load gcc
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load fftw
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load gromacs-gpu
+  
 #2. Begin 
-- gmx pdb2gmx -f model.pdb -o model_processed.gro (optional)
-- python -m propka model.gro -o 7.4 | python -m propka model.pdb -o 7.4 (optional)
+a.  gmx_mpi pdb2gmx -f model.pdb -o model_processed.gro (optional)
+b. python -m propka model.gro -o 7.4 | python -m propka model.pdb -o 7.4 (optional)
     #(we use TIP3P water which is compatible with our Amber99SB-ILDN forcefield)
-- gmx pdb2gmx -f model.pdb -o model_processed.gro | gmx pdb2gmx -f model.pdb -o model_processed.gro -his |  gmx pdb2gmx -f model.pdb -o model_processed.gro -inter
+c.  gmx pdb2gmx -f model.pdb -o model_processed.gro | gmx pdb2gmx -f model.pdb -o model_processed.gro -his |  gmx pdb2gmx -f model.pdb -o model_processed.gro -inter
     #6 (for Amber99SB-ILDN forcefield) and 1 (for TIP3P water)
     #(in this case is we have to determine the protonation state of histidine)
     #there is not possible to set an specific pH value (for our purposes is going to be 7.4) but it is possible to analyse and 
@@ -27,8 +29,12 @@
    #Remember that if you want to neutralize an aminocid you should choose the protonation state that results in an overall charge of 0.
    #This means that If the residue is normally negatively charged (e.g., GLU, ASP) use the protonated form to neutralize it and 
    #If the residue is normally positively charged (e.g., LYS, ARG) use the deprotonated form to neutralize it. So in general if you want a aminaocid neutralized
-   #just pay atention to the charge (it has to be 0)
-- gmx editconf -f model_processed.gro -o model_newbox.gro -c -d 1.0 -bt cubic
+     #just pay atention to the charge (it has to be 0)
+
+
+
+  ============================================================
+- gmx_mpi editconf -f model_processed.gro -o model_newbox.gro -c -d 1.0 -bt cubic
 - gmx solvate -cp model_newbox.gro -cs spc216.gro -o model_solv.gro -p topol.top 
     #(SPC216: simple point charge water is a pre-equilibrated box of 216 SPC water molecules and it is used for 3-site water models like TIP3P. The 216SPC is a file that contains 216 molecules of preequilibrated water taht it is used as a start point to fill a simulation box with water, This 216SPC is like a template that is used to fill you box with as much water as it is needed so even if the tmeplate has 216 water molecues of preequilibrated water you box wil not have only 216 water moleucles, your box wil end with thounsands of preequilibrated TIP3P water molecules that comes from the 216SPC file that was used as a template)
     # use: grep "SOL" topol.top to check if the topology file was updated with the water (SOL) molecules (you should see values once you execute this code, for example SOL 66850)
