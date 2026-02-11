@@ -13,7 +13,7 @@ cd /home1/AMUKHTAR24@kgi.edu/thesis/md_sims_native/n_ct173_pep7-dk7-model0_MD
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load fftw
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load gromacs-gpu
   
-#2. Begin 
+# 2. Set Protonation States
 a.  gmx_mpi pdb2gmx -f model.pdb -o model_processed.gro (optional)
 b. python -m propka model.gro -o 7.4 | python -m propka model.pdb -o 7.4 (optional)
     #(we use TIP3P water which is compatible with our Amber99SB-ILDN forcefield)
@@ -31,14 +31,18 @@ c.  gmx pdb2gmx -f model.pdb -o model_processed.gro | gmx pdb2gmx -f model.pdb -
    #If the residue is normally positively charged (e.g., LYS, ARG) use the deprotonated form to neutralize it. So in general if you want a aminaocid neutralized
      #just pay atention to the charge (it has to be 0)
 
-
-
-  ============================================================
-- gmx_mpi editconf -f model_processed.gro -o model_newbox.gro -c -d 1.0 -bt cubic
-- gmx solvate -cp model_newbox.gro -cs spc216.gro -o model_solv.gro -p topol.top 
+# 3. Set Box Size 
+ - gmx_mpi editconf -f model_processed.gro -o model_newbox.gro -c -d 1.0 -bt cubic
+   
+# 4. Solvate 
+- gmx_mpi solvate -cp model_newbox.gro -cs spc216.gro -o model_solv.gro -p topol.top 
     #(SPC216: simple point charge water is a pre-equilibrated box of 216 SPC water molecules and it is used for 3-site water models like TIP3P. The 216SPC is a file that contains 216 molecules of preequilibrated water taht it is used as a start point to fill a simulation box with water, This 216SPC is like a template that is used to fill you box with as much water as it is needed so even if the tmeplate has 216 water molecues of preequilibrated water you box wil not have only 216 water moleucles, your box wil end with thounsands of preequilibrated TIP3P water molecules that comes from the 216SPC file that was used as a template)
-    # use: grep "SOL" topol.top to check if the topology file was updated with the water (SOL) molecules (you should see values once you execute this code, for example SOL 66850)
-- gmx grompp -f ions.mdp -c model_solv.gro -p topol.top -o ions.tpr
+  
+  # use: grep "SOL" topol.top to check if the topology file was updated with the water (SOL) molecules (you should see values once you execute this code, for example SOL 66850)
+- grep SOL topol.top
+  
+# 4. Create .mdp files, starting with ions.mdp
+- gmx_mpi grompp -f ions.mdp -c model_solv.gro -p topol.top -o ions.tpr
     #grep -E "NA|CL|ION" topol.top you should not see any values here because IONS will be added in the next step, this is just ot verify that IONS are not present here and will be added in the next step
 - gmx genion -s ions.tpr -o model_solv_ions.gro -p topol.top -pname NA -nname CL -neutral -conc 0.15 
     # use the option 13 to add the ions (SOL)
