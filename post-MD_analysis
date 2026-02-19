@@ -1,3 +1,113 @@
+## Ayesha ##
+#1. RMSD + RMSF Analysis
+## analysis of trajectory files, select "protein" for all comands"
+module load gcc/12.3.0 gromacs-gpu/2024.3
+gmx_mpi trjconv -s md_0_1.tpr -f md_0_1.xtc -o Analysis/md_0_1_noPBC.xtc -pbc cluster -center
+## the following command will look at the structural stability, choose backbone (optin 4) for least squeare fit and RMSD calculation
+gmx_mpi rms -s md_0_1.tpr -f Analysis/md_0_1_noPBC.xtc -o Analysis/rmsd.xvg -tu ns
+gmx_mpi rms -s em.tpr -f Analysis/md_0_1_noPBC.xtc -o Analysis/rmsd_xtal.xvg -tu ns
+gmx_mpi rmsf -s md_0_1.tpr -f Analysis/md_0_1_noPBC.xtc -o Analysis/rmsf.xvg
+
+##generating differnet index files to analyze RMSD and RMSF separatelly 
+gmx_mpi make_ndx -f md_0_1.gro -o Analysis/index.ndx 
+#Review .gro file and atom numbering to select for proper index of protein 1 and protein 2, "a" for atom or "r" for residue
+#Press "q" to save and quit
+    #name protein1
+    #a 101-200
+    #name protein2
+    #a 500-5600
+gmx_mpi select -f md_0_1.gro -n Analysis/index.ndx
+gmx_mdmat -f Analysis/md_0_1_noPBC.xtc -s md_0_1.gro -n Analysis/index.ndx  -mean Analysis/contact_map.xpm -no contact_map.xvg #choos 4 backbone for this
+## get representative PDB from a number of frames from trajectory file##, analyze cluster from cluster.log and get frames, choose protein (1) as output
+gmx_mpi trjconv -f Analysis/md_0_1_noPBC.xtc -s md_0_1.tpr -o snapshots_cluster1.pdb -b 27200 -e 100000
+##get one single pdb from a specific frame, this example at frame 100 000
+gmx_mpi trjconv -f Analysis/md_0_1_noPBC.xtc -s md_0_1.tpr -o snapshots_cluster1_pdb.pdb -dump 100000
+##analysing RMSD and RMSF separately using the index file
+    #this only works to generate hte RMSD of each protein, it will not work for the entire complex
+gmx_mpi trjconv -s md_0_1.tpr -f md_0_1.xtc -o fitted.xtc -pbc mol -center
+    #select system (group 0) and then protein (group 1)
+gmx_mpi rms -s model.pdb -f fitted.xtc -n index.ndx -o rmsd_protein1.xvg -tu ns
+    #select your protein from the index (protein 1 and protein 2)
+gmx_mpi rmsf -s md_0_1.tpr -f md_0_1_noPBC1.xtc -n index.ndx -o rmsf_protein1.xvg
+    #select your protein from the index (protein 1 and protein 2)
+
+
+
+#2 MMPBSA - 
+
+1. Set up environment (create an mmpbsa environment first if it doesnt exist)
+- module purge
+- module load gcc/13.3.0
+- module load openmpi
+- module load gromacs-gpu/2024.3
+
+2. Creat MM/PBSA Index File (not in conda env yet)
+- gmx_mpi make_ndx -f md_0_1.tpr -o index_mmpbsa.ndx
+
+Output:
+[AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ gmx_mpi make_ndx -f md_0_1.tpr -o index_mmpbsa.ndx
+                     :-) GROMACS - gmx make_ndx, 2024.3 (-:
+
+Executable:   /apps/generic/gromacs-gpu/2024.3/bin/gmx_mpi
+Data prefix:  /apps/generic/gromacs-gpu/2024.3
+Working dir:  /home1/AMUKHTAR24@kgi.edu/thesis/md_sims_native/n_ct173_pep7-dk7-model0_MD
+Command line:
+  gmx_mpi make_ndx -f md_0_1.tpr -o index_mmpbsa.ndx
+
+
+Reading structure file
+Reading file md_0_1.tpr, VERSION 2024.3 (single precision)
+Reading file md_0_1.tpr, VERSION 2024.3 (single precision)
+Going to read 0 old index file(s)
+Analysing residue names:
+There are:   275    Protein residues
+There are: 57151      Water residues
+There are:   327        Ion residues
+Analysing Protein...
+
+  0 System              : 175937 atoms
+  1 Protein             :  4157 atoms
+  2 Protein-H           :  2127 atoms
+  3 C-alpha             :   275 atoms
+  4 Backbone            :   825 atoms
+  5 MainChain           :  1103 atoms
+  6 MainChain+Cb        :  1352 atoms
+  7 MainChain+H         :  1373 atoms
+  8 SideChain           :  2784 atoms
+  9 SideChain-H         :  1024 atoms
+ 10 Prot-Masses         :  4157 atoms
+ 11 non-Protein         : 171780 atoms
+ 12 Water               : 171453 atoms
+ 13 SOL                 : 171453 atoms
+ 14 non-Water           :  4484 atoms
+ 15 Ion                 :   327 atoms
+ 16 Water_and_ions      : 171780 atoms
+
+ nr : group      '!': not  'name' nr name   'splitch' nr    Enter: list groups
+ 'a': atom       '&': and  'del' nr         'splitres' nr   'l': list residues
+ 't': atom type  '|': or   'keep' nr        'splitat' nr    'h': help
+ 'r': residue              'res' nr         'chain' char
+ "name": group             'case': case sensitive           'q': save and quit
+ 'ri': residue index
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## KAREN ##
 ## Analysis of MD run simulations ###
 
 ## analysis of trajectory files, select "protein" for all comands"
