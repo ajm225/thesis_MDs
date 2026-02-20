@@ -14,10 +14,10 @@ cd /home1/AMUKHTAR24@kgi.edu/thesis/md_sims_native/n_ct173_pep7-dk7-model0_MD
 - [AMUKHTAR24@kgi.edu@laguna1 n_ct173_pep7-dk7-model0_MD]$ module load gromacs-gpu
   
 # 2. Set Protonation States
-a.  gmx_mpi pdb2gmx -f model.pdb -o model_processed.gro (optional)
-b. python -m propka model.gro -o 7.4 | python -m propka model.pdb -o 7.4 (optional)
+- gmx_mpi pdb2gmx -f model.pdb -o model_processed.gro (optional)
+- python -m propka model.gro -o 7.4 | python -m propka model.pdb -o 7.4 (optional)
     #(we use TIP3P water which is compatible with our Amber99SB-ILDN forcefield)
-c.  gmx pdb2gmx -f model.pdb -o model_processed.gro | gmx pdb2gmx -f model.pdb -o model_processed.gro -his |  gmx pdb2gmx -f model.pdb -o model_processed.gro -inter
+- gmx_mpi  pdb2gmx -f model.pdb -o model_processed.gro | gmx pdb2gmx -f model.pdb -o model_processed.gro -his |  gmx pdb2gmx -f model.pdb -o model_processed.gro -inter
     #6 (for Amber99SB-ILDN forcefield) and 1 (for TIP3P water)
     #(in this case is we have to determine the protonation state of histidine)
     #there is not possible to set an specific pH value (for our purposes is going to be 7.4) but it is possible to analyse and 
